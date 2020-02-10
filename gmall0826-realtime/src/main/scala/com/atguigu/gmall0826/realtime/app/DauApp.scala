@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSON
 import com.atguigu.gmall0826.common.constant.GmallConstant
 import com.atguigu.gmall0826.realtime.bean.StartupLog
 import com.atguigu.gmall0826.realtime.util.{MyKafkaUtil, RedisUtil}
+import org.apache.hadoop.conf.Configuration
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.SparkConf
 import org.apache.spark.broadcast.Broadcast
@@ -15,6 +16,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import redis.clients.jedis.Jedis
+import org.apache.phoenix.spark._
 
 object DauApp {
 
@@ -85,6 +87,14 @@ object DauApp {
             }
             jedis.close()
         }
+    }
+
+    realFilteredDstream.foreachRDD {
+      rdd =>
+        rdd.saveToPhoenix("GMALL2020_DAU",
+          Seq("MID", "UID", "APPID", "AREA", "OS", "CH", "TYPE", "VS", "LOGDATE", "LOGHOUR", "TS"),
+          new Configuration,
+          Some("hadoop102,hadoop103,hadoop104:2181"))
     }
 
     ssc.start()
