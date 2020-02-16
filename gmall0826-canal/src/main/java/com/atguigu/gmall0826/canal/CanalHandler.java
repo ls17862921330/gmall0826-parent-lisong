@@ -37,7 +37,7 @@ public class CanalHandler {
             JSONObject jo = new JSONObject();
 
             for (CanalEntry.Column column : afterColumnsList) {
-//                System.out.println(column.getName() + "::" + column.getValue());
+                System.out.println(column.getName() + "::" + column.getValue());
                 jo.put(column.getName(), column.getValue());
             }
 
