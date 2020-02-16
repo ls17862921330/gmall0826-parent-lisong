@@ -24,12 +24,16 @@ public class CanalHandler {
     public void handle() {
         if(this.rowDataList != null && this.rowDataList.size() > 0) {
             if(this.tableName.equals("order_info") && this.eventType == CanalEntry.EventType.INSERT) {
-                send();
+                send(GmallConstant.KAFKA_TOPIC_ORDER);
+            }else if(this.tableName.equals("order_detail") && this.eventType == CanalEntry.EventType.INSERT) {
+                send(GmallConstant.KAFKA_TOPIC_ORDER_DETAIL);
+            }else if(this.tableName.equals("user_info") && (this.eventType == CanalEntry.EventType.INSERT) || this.eventType == CanalEntry.EventType.UPDATE) {
+                send(GmallConstant.KAFKA_TOPIC_USER);
             }
         }
     }
 
-    public void send() {
+    public void send(String topic) {
 
         for (CanalEntry.RowData rowData : this.rowDataList) {
             List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
@@ -40,9 +44,15 @@ public class CanalHandler {
                 System.out.println(column.getName() + "::" + column.getValue());
                 jo.put(column.getName(), column.getValue());
             }
-
+            /*
+            //设置延迟，错开批次发往kafka
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }*/
             String log = jo.toJSONString();
-            MyKafkaSender.send(GmallConstant.KAFKA_TOPIC_ORDER,log);
+            MyKafkaSender.send(topic,log);
         }
     }
 }
